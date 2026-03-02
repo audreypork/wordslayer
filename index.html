@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TYPE TO KILL</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #000;
+      --white: #fff;
+      --green:  #39FF14;
+      --pink:   #FF2D78;
+      --yellow: #FFE600;
+      --border: 3px solid #000;
+      --shadow: 5px 5px 0px #000;
+      --shadow-lg: 8px 8px 0px #000;
+      --font: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--white);
+      font-family: var(--font);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* ─── Header Bar ───────────────────────────────────── */
+    #header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: center;
+      border-bottom: var(--border);
+      background: var(--black);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .wave-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--white);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .wave-badge .wave-num {
+      background: var(--yellow);
+      color: var(--black);
+      font-size: 22px;
+      font-weight: 900;
+      padding: 2px 10px;
+      border: 2px solid var(--white);
+    }
+
+    #title-center {
+      text-align: center;
+      color: var(--white);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+
+    #title-center span { color: var(--green); }
+
+    .wpm-display {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      color: var(--white);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .wpm-display .wpm-val {
+      background: var(--green);
+      color: var(--black);
+      font-size: 24px;
+      font-weight: 900;
+      padding: 2px 10px;
+      border: 2px solid var(--white);
+      min-width: 56px;
+      text-align: center;
+      display: inline-block;
+    }
+
+    /* ─── Main Layout ──────────────────────────────────── */
+    #game-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ─── Player HP ────────────────────────────────────── */
+    #player-hp-section {
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+      background: var(--white);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .hp-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hp-icon { font-size: 28px; flex-shrink: 0; }
+
+    .hp-bar-wrap {
+      flex: 1;
+      border: var(--border);
+      height: 28px;
+      background: #eee;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hp-bar-fill {
+      height: 100%;
+      background: var(--green);
+      width: 100%;
+      transition: width 0.3s;
+    }
+
+    .hp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        -45deg, transparent, transparent 8px,
+        rgba(255,255,255,0.2) 8px, rgba(255,255,255,0.2) 16px
+      );
+    }
+
+    .hp-text {
+      font-size: 18px;
+      font-weight: 900;
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    /* ─── Monster Card ─────────────────────────────────── */
+    #monster-section {
+      border: var(--border);
+      box-shadow: var(--shadow-lg);
+      background: var(--white);
+      overflow: hidden;
+    }
+
+    #monster-header {
+      background: var(--black);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    #monster-name {
+      color: var(--green);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    #monster-wave-tag {
+      color: var(--yellow);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 2px solid var(--yellow);
+      padding: 3px 8px;
+    }
+
+    #monster-body {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 28px 28px 20px;
+    }
+
+    #monster-emoji-wrap { position: relative; flex-shrink: 0; }
+
+    #monster-emoji {
+      font-size: 96px;
+      line-height: 1;
+      display: block;
+      filter: drop-shadow(4px 4px 0 #000);
+    }
+
+    #monster-info { flex: 1; }
+
+    #monster-quip {
+      font-size: 13px;
+      font-style: italic;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 14px;
+      border-left: 4px solid var(--yellow);
+      padding-left: 10px;
+      font-family: Georgia, serif;
+    }
+
+    .monster-hp-label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .monster-hp-label span { font-size: 16px; letter-spacing: 1px; }
+
+    .monster-hp-bar-wrap {
+      border: var(--border);
+      height: 36px;
+      background: #eee;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .monster-hp-bar-fill {
+      height: 100%;
+      background: var(--pink);
+      width: 65%;
+      transition: width 0.3s;
+    }
+
+    .monster-hp-bar-fill.danger { background: #c00; }
+
+    .monster-hp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        -45deg, transparent, transparent 10px,
+        rgba(255,255,255,0.25) 10px, rgba(255,255,255,0.25) 20px
+      );
+    }
+
+    /* ─── Combo Display ────────────────────────────────── */
+    #combo-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 14px 20px;
+      background: var(--black);
+    }
+
+    #combo-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #combo-label {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    #combo-value {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--yellow);
+      line-height: 1;
+      min-width: 52px;
+      transition: transform 0.08s ease-out;
+    }
+
+    #combo-value.pop { transform: scale(1.35); }
+
+    #combo-multiplier {
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      border: 2px solid #555;
+      padding: 4px 10px;
+      color: #555;
+      opacity: 0.35;
+      transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    #stats-mini {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .stat-chip { text-align: center; }
+
+    .stat-chip .stat-val {
+      display: block;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-chip .stat-key {
+      display: block;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ─── Word Queue ───────────────────────────────────── */
+    #word-queue-section {
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      background: var(--white);
+      transition: background 0.15s;
+    }
+
+    #word-queue {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .word-chip {
+      padding: 10px 18px;
+      border: var(--border);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--white);
+      box-shadow: 4px 4px 0 #000;
+      position: relative;
+      transition: box-shadow 0.08s, transform 0.08s;
+    }
+
+    .word-chip.active {
+      background: var(--yellow);
+      box-shadow: 4px 4px 0 #000;
+      font-size: 36px;
+      padding: 14px 24px;
+    }
+
+    /* Character spans inside active chip */
+    .word-chip.active .typed {
+      color: var(--black);
+      text-decoration: underline;
+      text-decoration-color: var(--green);
+      text-underline-offset: 5px;
+    }
+
+    .word-chip.active .remaining { color: #333; }
+
+    .word-chip.active .wrong {
+      color: var(--pink);
+      text-decoration: underline;
+      text-decoration-color: var(--pink);
+      text-underline-offset: 4px;
+    }
+
+    .word-chip.next1 { background: var(--white); color: var(--black); }
+    .word-chip.next2 { background: var(--white); color: #bbb; border-color: #ccc; box-shadow: 4px 4px 0 #ccc; }
+
+
+    .word-chip.next1::before {
+      content: 'NEXT';
+      position: absolute;
+      top: -10px; left: 6px;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: var(--pink);
+      color: var(--white);
+      padding: 1px 5px;
+    }
+
+    /* Countdown bar inside active chip */
+    .timer-bar-wrap {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 5px;
+      background: rgba(0,0,0,0.1);
+    }
+
+    .timer-bar-fill {
+      height: 100%;
+      background: var(--green);
+      width: 100%;   /* starts full, JS decrements */
+    }
+
+    .timer-bar-fill.warning { background: var(--yellow); }
+    .timer-bar-fill.danger  { background: var(--pink); }
+
+    /* ─── Input Field ──────────────────────────────────── */
+    #input-wrap { position: relative; }
+
+    #type-input {
+      width: 100%;
+      border: var(--border);
+      border-width: 4px;
+      font-family: var(--font);
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 16px 20px;
+      outline: none;
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      caret-color: var(--pink);
+      transition: border-color 0.08s, box-shadow 0.08s, background 0.08s;
+    }
+
+    #type-input:focus { box-shadow: 8px 8px 0 var(--green); }
+
+    #type-input.error {
+      background: #fff0f5;
+      border-color: var(--pink) !important;
+      box-shadow: 8px 8px 0 var(--pink) !important;
+    }
+
+    #input-hint {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ccc;
+      pointer-events: none;
+    }
+
+    /* ─── Overlays ─────────────────────────────────────── */
+    #wave-intro {
+      position: fixed; inset: 0;
+      background: var(--black);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200; gap: 20px;
+    }
+
+    #wave-intro .intro-wave {
+      font-size: 14px; font-weight: 900;
+      letter-spacing: 6px; text-transform: uppercase; color: #555;
+    }
+
+    #wave-intro .intro-monster-emoji {
+      font-size: 120px;
+      animation: bounce 0.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-16px); }
+    }
+
+    #wave-intro .intro-name {
+      font-size: 52px; font-weight: 900;
+      letter-spacing: 8px; text-transform: uppercase;
+      color: var(--green);
+      text-shadow: 4px 4px 0 var(--white);
+    }
+
+    #wave-intro .intro-quip {
+      font-size: 18px; font-weight: 700; font-style: italic;
+      font-family: Georgia, serif;
+      color: var(--yellow); max-width: 500px; text-align: center;
+    }
+
+    #wave-intro .intro-countdown {
+      margin-top: 32px; font-size: 13px; font-weight: 900;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--black); background: var(--yellow);
+      border: 3px solid var(--black); box-shadow: 4px 4px 0 var(--black);
+      padding: 12px 28px; cursor: pointer;
+    }
+
+    #wave-intro.hidden { display: none; }
+
+    #endscreen {
+      position: fixed; inset: 0;
+      background: var(--black);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200; gap: 24px;
+    }
+
+    #endscreen.hidden { display: none; }
+
+    #endscreen .end-emoji {
+      font-size: 90px;
+      animation: spin 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(-5deg) scale(1); }
+      50%  { transform: rotate(5deg) scale(1.08); }
+      100% { transform: rotate(-5deg) scale(1); }
+    }
+
+    #endscreen .end-title {
+      font-size: 64px; font-weight: 900;
+      letter-spacing: 8px; text-transform: uppercase;
+      text-shadow: 5px 5px 0;
+    }
+
+    #endscreen .end-title.win  { color: var(--green); text-shadow-color: var(--white); }
+    #endscreen .end-title.lose { color: var(--pink);  text-shadow-color: var(--white); }
+
+    #endscreen .end-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; border: 3px solid var(--white);
+    }
+
+    .end-stat-cell { background: #111; border: 1px solid #333; padding: 16px 28px; text-align: center; }
+    .end-stat-cell .esv { display: block; font-size: 40px; font-weight: 900; color: var(--yellow); line-height: 1; }
+    .end-stat-cell .esk { display: block; font-size: 10px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #888; margin-top: 4px; }
+
+    #endscreen .end-btn {
+      margin-top: 8px; font-family: var(--font);
+      font-size: 16px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;
+      border: 3px solid var(--white); background: var(--white); color: var(--black);
+      padding: 14px 40px; cursor: pointer;
+      box-shadow: 6px 6px 0 #666; transition: box-shadow 0.1s, transform 0.1s;
+    }
+
+    #endscreen .end-btn:hover { box-shadow: 2px 2px 0 #666; transform: translate(4px, 4px); }
+
+    /* .dmg-float and @keyframes floatUp defined below with monster animations */
+
+    /* ─── Screen shake ─────────────────────────────────── */
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20%  { transform: translate(-7px, 5px) rotate(-0.5deg); }
+      40%  { transform: translate(7px, -5px) rotate(0.5deg); }
+      60%  { transform: translate(-5px, 7px) rotate(-0.3deg); }
+      80%  { transform: translate(5px, -3px) rotate(0.3deg); }
+    }
+
+    body.shake { animation: screenShake 0.42s ease-out; }
+
+    /* ─── Monster hit flash ─────────────────────────────── */
+    @keyframes monsterHit {
+      0%, 100% { filter: drop-shadow(4px 4px 0 #000); }
+      50% { filter: drop-shadow(0 0 24px var(--pink)) brightness(2.5); }
+    }
+
+    #monster-emoji.hit { animation: monsterHit 0.28s ease-out; }
+
+    /* ─── Monster shake on damage ───────────────────────── */
+    @keyframes monsterShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20%  { transform: translate(-10px, 4px) rotate(-5deg); }
+      45%  { transform: translate(10px, -4px) rotate(5deg); }
+      70%  { transform: translate(-6px, 2px) rotate(-2deg); }
+    }
+
+    #monster-emoji-wrap.shake { animation: monsterShake 0.32s ease-out; }
+
+    /* ─── Monster death ─────────────────────────────────── */
+    @keyframes monsterDie {
+      0%   { transform: scale(1) rotate(0deg);   opacity: 1; filter: drop-shadow(4px 4px 0 #000); }
+      55%  { transform: scale(1.6) rotate(200deg); opacity: 1; filter: drop-shadow(0 0 40px var(--green)) brightness(4); }
+      100% { transform: scale(0) rotate(380deg); opacity: 0; }
+    }
+
+    #monster-emoji.dying { animation: monsterDie 0.55s ease-in forwards; }
+
+    /* ─── Monster respawn ───────────────────────────────── */
+    @keyframes monsterSpawn {
+      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+      65%  { transform: scale(1.25) rotate(6deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg);  opacity: 1; }
+    }
+
+    #monster-emoji.spawn {
+      animation: monsterSpawn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* ─── Player HP hurt flash ──────────────────────────── */
+    @keyframes hpHurt {
+      0%, 35% { filter: brightness(3); }
+      100%    { filter: brightness(1); }
+    }
+
+    #hp-bar.damage-flash { animation: hpHurt 0.38s ease-out; }
+
+    /* ─── Pink vignette on player damage ────────────────── */
+    #dmg-overlay {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 400;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(255,45,120,0.5) 100%);
+      opacity: 0;
+    }
+
+    @keyframes vignetteFade {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    #dmg-overlay.flash { animation: vignetteFade 0.5s ease-out forwards; }
+
+    /* ─── Floating damage numbers ───────────────────────── */
+    .dmg-float {
+      position: fixed;
+      font-size: 30px; font-weight: 900;
+      text-shadow: 2px 2px 0 #000;
+      pointer-events: none; z-index: 500;
+      animation: floatUp 0.85s ease-out forwards;
+      white-space: nowrap;
+    }
+
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0)    scale(1); }
+      15%  { opacity: 1; transform: translateY(-8px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+    }
+
+    /* ─── Boss wave — monster card ─────────────────────── */
+    #monster-section.boss #monster-header {
+      background: #1a0008;
+      border-bottom: 3px solid var(--pink);
+    }
+
+    #monster-section.boss #monster-name {
+      color: var(--pink);
+      animation: bossNameGlow 0.9s ease-in-out infinite alternate;
+    }
+
+    @keyframes bossNameGlow {
+      from { text-shadow: none; }
+      to   { text-shadow: 0 0 16px var(--pink), 0 0 40px rgba(255,45,120,0.45); }
+    }
+
+    /* ─── Boss wave — intro overlay ─────────────────────── */
+    #wave-intro.boss { background: radial-gradient(ellipse at center, #1a0008 0%, #000 70%); }
+
+    #wave-intro.boss .intro-name {
+      color: var(--pink);
+      animation: bossNameGlow 0.9s ease-in-out infinite alternate;
+    }
+
+    #wave-intro.boss .intro-wave { color: var(--pink); }
+
+    /* ─── Player HP danger state ─────────────────────────── */
+    #hp-bar.danger { background: var(--pink); }
+
+    /* ─── End screen subtitle ────────────────────────────── */
+    #end-subtitle {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #666;
+      margin-top: -12px;
+    }
+
+    /* ─── Responsive ────────────────────────────────────── */
+    @media (max-width: 600px) {
+      #title-center { font-size: 16px; letter-spacing: 3px; }
+      #monster-body { flex-direction: column; align-items: flex-start; }
+      #monster-emoji { font-size: 64px; }
+      .end-stats { grid-template-columns: 1fr; }
+      #endscreen .end-title { font-size: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── WAVE INTRO (hidden at start) ──────────────────── -->
+  <div id="wave-intro" class="hidden">
+    <div class="intro-wave" id="intro-wave-label">— WAVE 01 / 05 —</div>
+    <div class="intro-monster-emoji" id="intro-emoji-el">🧟</div>
+    <div class="intro-name" id="intro-name-el">GARY THE UNDEAD</div>
+    <div class="intro-quip" id="intro-quip-el">"I used to be an adventurer like you."</div>
+    <div class="intro-countdown" id="intro-countdown-el">CLICK TO FIGHT</div>
+  </div>
+
+  <!-- ─── END SCREEN ────────────────────────────────────── -->
+  <div id="endscreen" class="hidden">
+    <div class="end-emoji" id="end-emoji">💀</div>
+    <div class="end-title lose" id="end-title">YOU DIED</div>
+    <div id="end-subtitle">WAVE 1 / 05</div>
+    <div class="end-stats">
+      <div class="end-stat-cell"><span class="esv" id="end-wpm">0</span><span class="esk">WPM</span></div>
+      <div class="end-stat-cell"><span class="esv" id="end-acc">100%</span><span class="esk">Accuracy</span></div>
+      <div class="end-stat-cell"><span class="esv" id="end-time">0:00</span><span class="esk">Time</span></div>
+    </div>
+    <button class="end-btn" id="play-again-btn">PLAY AGAIN</button>
+  </div>
+
+  <!-- ─── HEADER ───────────────────────────────────────── -->
+  <header id="header">
+    <div class="wave-badge">
+      WAVE <span class="wave-num" id="wave-num">1</span> / 05
+    </div>
+    <div id="title-center">TYPE<span>TO</span>KILL</div>
+    <div class="wpm-display">
+      WPM <span class="wpm-val" id="wpm-val">0</span>
+    </div>
+  </header>
+
+  <!-- ─── GAME AREA ─────────────────────────────────────── -->
+  <div id="game-wrapper">
+
+    <!-- Monster Card -->
+    <section id="monster-section">
+      <div id="monster-header">
+        <div id="monster-name">🤡 GIGGLES THE UNDYING</div>
+        <div id="monster-wave-tag">WAVE — BOSS</div>
+      </div>
+      <div id="monster-body">
+        <div id="monster-emoji-wrap">
+          <span id="monster-emoji">🤡</span>
+        </div>
+        <div id="monster-info">
+          <div id="monster-quip">"I ate a thesaurus once. It gave me great power AND… great power."</div>
+          <div class="monster-hp-label">
+            <span>MONSTER HP</span>
+            <span id="monster-hp-val">120 / 120</span>
+          </div>
+          <div class="monster-hp-bar-wrap">
+            <div class="monster-hp-bar-fill" id="monster-hp-fill" style="width:100%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Combo + Stats Row (extra top gap separates monster from action zone) -->
+    <section id="combo-section" style="margin-top:20px;">
+      <div id="combo-badge">
+        <div id="combo-label">Combo</div>
+        <div id="combo-value">x0</div>
+        <div id="combo-multiplier">NO BONUS</div>
+      </div>
+      <div id="stats-mini">
+        <div class="stat-chip">
+          <span class="stat-val neon-green" id="stat-words">0</span>
+          <span class="stat-key">Words</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-val neon-yellow" id="stat-accuracy">100%</span>
+          <span class="stat-key">Accuracy</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-val" style="color:#fff;" id="stat-time">0:00</span>
+          <span class="stat-key">Time</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Word Queue + Input -->
+    <section id="word-queue-section">
+      <div class="section-label" style="margin-bottom:14px;">Word Queue — type in order</div>
+
+      <div id="word-queue">
+        <div class="word-chip active"></div>
+        <div class="word-chip next1"></div>
+        <div class="word-chip next2"></div>
+      </div>
+
+      <div id="input-wrap">
+        <input
+          id="type-input"
+          type="text"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="START TYPING..."
+        />
+        <span id="input-hint">TYPE THE WORD</span>
+      </div>
+    </section>
+
+    <!-- Player HP — lives at the bottom -->
+    <section id="player-hp-section">
+      <div class="section-label">Player Health</div>
+      <div class="hp-row">
+        <div class="hp-icon">❤️</div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-fill" id="hp-bar" style="width:100%;"></div>
+        </div>
+        <div class="hp-text" id="hp-text">100 / 100</div>
+      </div>
+    </section>
+
+  </div><!-- /#game-wrapper -->
+
+  <!-- Pink vignette flashes when player takes damage -->
+  <div id="dmg-overlay"></div>
+
+  <script>
+  'use strict';
+  // ═══════════════════════════════════════════════════════
+  // WORD POOLS  (split by difficulty tier)
+  // ═══════════════════════════════════════════════════════
+  const WORDS_T1 = [
+    // 2-letter
+    'go','do','be','up','at','in','on','or','if','is',
+    'am','as','us','my','no','by','ax','ox','ah','ow',
+    // 3-letter
+    'ace','arc','axe','bay','bug','cap','dew','dim','dot','dye',
+    'fog','gem','gum','hex','hub','hue','ice','ink','ivy','jam',
+    'jet','jug','kid','kit','lab','lip','log','lug','mad','mob',
+    'mud','nap','nod','nut','oak','orb','owl','paw','pit','pub',
+    'rag','rib','rob','rug','rum','ski','spa','spy','tab','tin',
+    'toe','tug','van','vim','wag','web','wig','yak','zap','zip',
+    // 4-letter
+    'apex','arch','atom','bask','bolt','buzz','calm','chip','clam','clay',
+    'clip','coil','colt','corn','cram','curl','damp','dash','disk','dusk',
+    'dust','fang','firm','fist','fizz','flag','flap','flaw','flip','flux',
+    'foam','fold','fray','frog','fuel','gale','gaze','glee','glow','grim',
+    'grin','grip','gust','hack','haul','hawk','howl','hull','hunk','hurl',
+    'hymn','jest','jolt','knot','lark','lash','laze','leap','loft','lull',
+    'lurk','lynx','mast','mist','moan','mock','molt','monk','myth','navy',
+    'nerd','nest','newt','null','numb','oath','ogre','opal','pact','pale',
+    'pang','pave','pawn','peak','pelt','ploy',
+  ];
+
+  const WORDS_T2 = [
+    // 5-letter
+    'perch','pivot','pluck','plumb','plume','poach','preen','prism','prong','prowl',
+    'blaze','blast','bliss','bloom','bluff','boost','brave','brisk','brush',
+    'chunk','clash','crisp','crypt','dwarf','dwell','ember','feast','flair',
+    'flare','flash','fleet','forge','frank','freak','frost','ghost','giant',
+    'glass','gleam','glide','gloss','grace','grasp','greed','greet','grief',
+    'grime','grind','grunt','gusto','haunt','haven','hedge','heist','hoist',
+    'hunch','morph','rabid','recoil','sleek','smash','snare','spark','stomp',
+    'surge','swarm','swipe','talon','toxic','vault','vigor','viper','whack','wreck',
+    // 6-7 letter
+    'hustle','mangle','marble','menace','muster','pounce','primal','pulsar',
+    'quartz','savage','scorch','sprint','tangle','thrash','thrust','torque',
+    'vortex','zealot',
+  ];
+
+  const WORDS_T3 = [
+    'abstract','absolute','backbone','backward','balanced','bankrupt','basement',
+    'brackets','brutalize','calendar','catapult','collapse','conclude','conspire',
+    'construct','contract','crumbling','darkness','deadline','disaster','dissolve',
+    'dominant','downfall','dramatic','dropkick','dynamics','enormous','epidemic',
+    'evidence','explorer','external','feedback','flagrant','frenzied','frustrate',
+    'geometry','gorgeous','grateful','gruesome','harmless','headfirst','helpless',
+    'horrible','ignorant','imminent','improved','infernal','inspired','internal',
+    'isolated','knapsack','landmark','language','launched','leverage','limiting',
+    'lockdown','loudness','magazine','magnetic','mainland','majority','measured',
+    'mechanic','medieval','midnight','momentum','mountain','movement','multiply',
+    'navigate','negative','nightfall','observed','obstacle','occupied','occurred',
+    'overcome','overload','packaged','paradigm','patience','peaceful','planning',
+    'platform','poisoned','portable','portrait','practice','prepared','pristine',
+    'progress','properly','proposed','punished','purchase','pursuing','randomly',
+    'reckless','recorded','rejected','relevant','reminder','replaced','reviewed',
+    'revealed','reversed','ruthless','salvaged','scaffold','schedule','scramble',
+    'scripted','shambles','shattered','shortcut','shutdown','skeleton','sleeping',
+    'slowdown','smashing','snapshot','software','solution','specific','spectrum',
+    'spirited','splinter','standard','standing','stealthy','stimulus','strategy',
+    'strength','stretched','struggle','stubborn','stumbled','symbolic','syndrome',
+    'tactical','talented','tangible','terminal','thousand','throttle','throwing',
+    'timeline','together','tolerate','tracking','training','transfer','transmit',
+    'traveled','triangle','twilight','ultimate','umbrella','uncommon','undercut',
+    'universe','unstable','upgraded','valuable','variance','velocity','vertical',
+    'violated','volcanic','wandered','warnings','watchful','weakened','wildfire',
+    'withdraw','wondered','wretched',
+  ];
+
+  const WORDS_T4 = [
+    // 9-letter
+    'adventure','algorithm','abandoned','architect','bandwidth','blueprint',
+    'calculate','challenge','clockwork','customize','dangerous','debugging',
+    'dedicated','dimension','disrupted','dominance','evaporate','explosive',
+    'extremely','formation','fragments','frequency','generator','hazardous',
+    'ignorance','isolation','labyrinth','landscape','lightning','machinery',
+    'magnitude','mainframe','merciless','monstrous','nightmare','objective',
+    'obstacles','operators','overpower','overthrow','partition','perimeter',
+    'prototype','pulsating','punctured','resistant','scattered','shockwave',
+    'simulator','slaughter','structure','submarine','surviving','suspended',
+    'terraform','threshold','tornadoes','trademark','translate','trembling',
+    'turbulent','unlimited','validated','vanishing','variables','wordsmith',
+    'wrestling',
+    // 10-letter
+    'accomplish','annihilate','atmosphere','birthplace','brainstorm','breakpoint',
+    'calculated','challenged','consistent','controlled','corrupting','decimation',
+    'dictionary','disruptive','dominating','escalation','exhausting','extinction',
+    'exhilarate','extinguish','flawlessly','formidable','foundation','frustrated',
+    'generation','glittering','impossible','increasing','inevitable','invincible',
+    'masterwork','mechanical','mutilation','navigation','nightmares','objectives',
+    'obliterate','overcoming','overthrown','permafrost','persistent','processing',
+    'randomized','reflection','relentless','resolution','resilience','revolution',
+    'scoreboard','shattering','shockingly','smoldering','strategize','systematic',
+    'terminated','terrifying','trajectory','tremendous','triggering','turbulence',
+    'unbeatable','unexpected','unleashing','victorious','vulnerable','wavelength',
+    'wilderness','worthwhile',
+    // 11-letter
+    'approaching','catastrophe','challenging','complicated','crystalline',
+    'devastation','dilapidated','dismantling','frantically','furthermore',
+    'galvanizing','illuminated','immediately','independent','infuriating',
+    'magnificent','nightmarish','obliterated','persistence','programming',
+    'spectacular','thunderbolt','unravelling',
+    // 12-letter
+    'accomplished','breathtaking','catastrophic','complication','considerably',
+    'contributing','overwhelming','tyrannically','unforgivable',
+  ];
+
+  // ═══════════════════════════════════════════════════════
+  // WAVE DEFINITIONS
+  // ═══════════════════════════════════════════════════════
+  const WAVES = [
+    { wave:1, emoji:'🧟', name:'GARY THE UNDEAD',
+      quip:'I used to be an adventurer like you. Then I forgot how to spell.',
+      hp:100, timer:4500, tier:1 },
+    { wave:2, emoji:'👹', name:'BLORPH THE TERRIBLE',
+      quip:'My weakness is vocabulary. And also fire. Mostly vocabulary.',
+      hp:220, timer:4000, tier:2 },
+    { wave:3, emoji:'🫠', name:'MELTSWORTH THE FORMLESS',
+      quip:'I have no bones and I must scream.',
+      hp:400, timer:3400, tier:3 },
+    { wave:4, emoji:'🐙', name:'KRAKENSWORTH THE VERBOSE',
+      quip:'I have eight arms and zero chill.',
+      hp:750, timer:2400, tier:4 },
+    { wave:5, emoji:'🐱', name:'MR. WHISKERS, WORLD ENDER',
+      quip:'You trained for this. I just knocked a glass off a table.',
+      hp:1100, timer:2000, tier:5, isBoss:true },
+  ];
+
+  // ═══════════════════════════════════════════════════════
+  // AUDIO
+  // ═══════════════════════════════════════════════════════
+  let _audioCtx = null;
+  function audio() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    return _audioCtx;
+  }
+
+  function tone(freq, type, startTime, duration, gain, ctx) {
+    const osc = ctx.createOscillator(), vol = ctx.createGain();
+    osc.connect(vol); vol.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    vol.gain.setValueAtTime(gain, startTime);
+    vol.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime); osc.stop(startTime + duration);
+  }
+
+  function sfxHit() {
+    try {
+      const ctx = audio(), t = ctx.currentTime;
+      tone(500, 'square', t,        0.05, 0.18, ctx);
+      tone(1000,'sine',   t + 0.04, 0.08, 0.12, ctx);
+    } catch(e) {}
+  }
+
+  function sfxMiss() {
+    try {
+      const ctx = audio(), t = ctx.currentTime;
+      const osc = ctx.createOscillator(), vol = ctx.createGain();
+      osc.connect(vol); vol.connect(ctx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, t);
+      osc.frequency.exponentialRampToValueAtTime(65, t + 0.38);
+      vol.gain.setValueAtTime(0.2, t);
+      vol.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+      osc.start(t); osc.stop(t + 0.38);
+    } catch(e) {}
+  }
+
+  function sfxBoss() {
+    try {
+      const ctx = audio(), t = ctx.currentTime;
+      // Ominous low drone
+      [55, 73.4, 110].forEach((f, i) => tone(f, 'sawtooth', t + i*0.12, 1.2, 0.07, ctx));
+      // Piercing accent
+      tone(880, 'sine', t + 0.5, 0.4, 0.12, ctx);
+      tone(440, 'sine', t + 0.9, 0.5, 0.10, ctx);
+    } catch(e) {}
+  }
+
+  function sfxVictory() {
+    try {
+      const ctx = audio(), t = ctx.currentTime;
+      [523, 659, 784, 1047].forEach((f, i) => tone(f, 'sine', t + i*0.14, 0.35, 0.18, ctx));
+      [523, 659, 784].forEach(f => tone(f, 'sine', t + 0.75, 0.7, 0.12, ctx));
+    } catch(e) {}
+  }
+
+  function sfxDeath() {
+    try {
+      const ctx = audio(), t = ctx.currentTime;
+      [400, 340, 280, 200].forEach((f, i) => tone(f, 'sawtooth', t + i*0.22, 0.28, 0.14, ctx));
+    } catch(e) {}
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // DOM REFS
+  // ═══════════════════════════════════════════════════════
+  const eid = id => document.getElementById(id);
+  const waveIntroEl   = eid('wave-intro');
+  const inputEl       = eid('type-input');
+  const queueEl       = eid('word-queue');
+  const wpmValEl      = eid('wpm-val');
+  const comboValEl    = eid('combo-value');
+  const comboMultEl   = eid('combo-multiplier');
+  const statWordsEl   = eid('stat-words');
+  const statAccEl     = eid('stat-accuracy');
+  const statTimeEl    = eid('stat-time');
+  const chips         = Array.from(queueEl.children);
+
+  // ═══════════════════════════════════════════════════════
+  // GAME STATE
+  // ═══════════════════════════════════════════════════════
+  const G = {
+    queue: [], pool: [], usedWords: new Set(),
+    hits: 0, misses: 0, totalChars: 0, combo: 0,
+    firstKeyTime: null, wordStartTime: null,
+    missTimer: null, rafId: null, clockId: null,
+    // combat
+    playerHp: 100, playerMaxHp: 100,
+    monsterHp: 80,  monsterMaxHp: 80,
+    monsterDying: false,
+    // waves
+    wave: 1,
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // UTILS
+  // ═══════════════════════════════════════════════════════
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getPool() {
+    if (G.wave === 1) return WORDS_T1.filter(w => w.length <= 3);  // 2-3 letters
+    if (G.wave === 2) return [...WORDS_T1.filter(w => w.length >= 4), ...WORDS_T2.filter(w => w.length <= 5)]; // 4-5
+    if (G.wave === 3) return WORDS_T2;                             // 5-7 letters
+    if (G.wave === 4) return [...WORDS_T2.filter(w => w.length >= 6), ...WORDS_T3]; // 6-8 letters
+    return WORDS_T4;                                               // 9-12 letters
+  }
+
+  function popWord() {
+    if (!G.pool.length) {
+      const available = getPool().filter(w => !G.usedWords.has(w));
+      G.pool = shuffle(available.length ? available : getPool()); // fallback if all exhausted
+    }
+    const word = G.pool.pop();
+    G.usedWords.add(word);
+    return word;
+  }
+
+  function elapsedSecs() {
+    return G.firstKeyTime ? (Date.now() - G.firstKeyTime) / 1000 : 0;
+  }
+
+  function calcWPM() {
+    const mins = elapsedSecs() / 60;
+    return mins < 0.02 ? 0 : Math.round((G.totalChars / 5) / mins);
+  }
+
+  function calcAcc() {
+    const total = G.hits + G.misses;
+    return total === 0 ? 100 : Math.round((G.hits / total) * 100);
+  }
+
+  function fmtTime(s) {
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // COMBAT
+  // ═══════════════════════════════════════════════════════
+  function calcDamage() {
+    const wpm  = Math.max(32, calcWPM());
+    const base = Math.round(wpm / 4);
+    return G.combo >= 3 ? Math.round(base * 1.5) : base;
+  }
+
+  function spawnFloat(text, color, anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const div  = document.createElement('div');
+    div.className   = 'dmg-float';
+    div.textContent = text;
+    div.style.color = color;
+    div.style.left  = (rect.left + rect.width / 2 - 24) + 'px';
+    div.style.top   = (rect.top  + rect.height / 4)     + 'px';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 950);
+  }
+
+  function updateMonsterHp() {
+    const pct  = Math.max(0, G.monsterHp / G.monsterMaxHp * 100);
+    const fill = eid('monster-hp-fill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('danger', pct < 30);
+    eid('monster-hp-val').textContent = `${Math.max(0, G.monsterHp)} / ${G.monsterMaxHp}`;
+  }
+
+  function updatePlayerHp() {
+    const pct = Math.max(0, G.playerHp / G.playerMaxHp * 100);
+    const bar = eid('hp-bar');
+    bar.style.width = pct + '%';
+    bar.classList.toggle('danger', pct < 30);
+    eid('hp-text').textContent = `${Math.max(0, G.playerHp)} / ${G.playerMaxHp}`;
+  }
+
+  function animateMonsterHit() {
+    const emoji = eid('monster-emoji');
+    const wrap  = eid('monster-emoji-wrap');
+    emoji.classList.remove('hit');
+    wrap.classList.remove('shake');
+    void wrap.offsetWidth;
+    emoji.classList.add('hit');
+    wrap.classList.add('shake');
+    setTimeout(() => { emoji.classList.remove('hit'); wrap.classList.remove('shake'); }, 340);
+  }
+
+  function dealToMonster(dmg) {
+    if (G.monsterDying) return;
+    G.monsterHp -= dmg;
+    spawnFloat('−' + dmg, 'var(--green)', eid('monster-emoji'));
+    animateMonsterHit();
+    updateMonsterHp();
+    if (G.monsterHp <= 0) { G.monsterHp = 0; onMonsterDeath(); }
+  }
+
+  function dealToPlayer(dmg) {
+    if (G.playerHp <= 0) return;
+    G.playerHp -= dmg;
+    spawnFloat('−' + dmg, 'var(--pink)', eid('hp-bar'));
+
+    const bar = eid('hp-bar');
+    bar.classList.remove('damage-flash'); void bar.offsetWidth;
+    bar.classList.add('damage-flash');
+    setTimeout(() => bar.classList.remove('damage-flash'), 400);
+
+    const overlay = eid('dmg-overlay');
+    overlay.classList.remove('flash'); void overlay.offsetWidth;
+    overlay.classList.add('flash');
+
+    updatePlayerHp();
+    if (G.playerHp <= 0) { G.playerHp = 0; onPlayerDeath(); }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // WAVE SYSTEM
+  // ═══════════════════════════════════════════════════════
+  function showWaveIntro(waveIdx, onComplete) {
+    const data = WAVES[waveIdx];
+
+    eid('intro-wave-label').textContent   = `— WAVE ${String(waveIdx + 1).padStart(2,'0')} / 05 —`;
+    eid('intro-emoji-el').textContent     = data.emoji;
+    eid('intro-name-el').textContent      = data.name;
+    eid('intro-quip-el').textContent      = `"${data.quip}"`;
+    eid('intro-countdown-el').textContent = 'CLICK TO FIGHT';
+
+    if (data.isBoss) { waveIntroEl.classList.add('boss'); sfxBoss(); }
+    else             { waveIntroEl.classList.remove('boss'); }
+
+    waveIntroEl.classList.remove('hidden');
+    inputEl.blur();
+
+    function begin() {
+      waveIntroEl.removeEventListener('click', begin);
+      document.removeEventListener('keydown', onKey);
+      waveIntroEl.classList.add('hidden');
+      onComplete();
+    }
+    function onKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin(); }
+    }
+    // Small delay so the last keystroke that killed the monster doesn't instantly start
+    setTimeout(() => {
+      waveIntroEl.addEventListener('click', begin);
+      document.addEventListener('keydown', onKey);
+    }, 350);
+  }
+
+  function startWave(waveIdx) {
+    const data = WAVES[waveIdx];
+    G.wave         = data.wave;
+    G.monsterHp    = data.hp;
+    G.monsterMaxHp = data.hp;
+    G.monsterDying = false;
+    G.pool         = [];    // force re-shuffle from new tier
+
+    // Update header wave badge
+    eid('wave-num').textContent = String(data.wave).padStart(2, '0');
+
+    // Update monster card
+    const section = eid('monster-section');
+    section.classList.toggle('boss', !!data.isBoss);
+    eid('monster-emoji').textContent    = data.emoji;
+    eid('monster-name').textContent     = `${data.emoji} ${data.name}`;
+    eid('monster-wave-tag').textContent = data.isBoss ? '⚡ FINAL BOSS' : `WAVE ${String(data.wave).padStart(2,'0')}`;
+    eid('monster-quip').textContent     = `"${data.quip}"`;
+
+    updateMonsterHp();
+
+    // Refill queue with words from the new tier
+    G.queue = [];
+    for (let i = 0; i < 3; i++) G.queue.push(popWord());
+    inputEl.value = '';
+    renderQueue();
+
+    startWordTimer();
+    inputEl.focus();
+  }
+
+  function onMonsterDeath() {
+    G.monsterDying = true;
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+
+    const emoji = eid('monster-emoji');
+    emoji.classList.remove('hit');
+    emoji.classList.add('dying');
+
+    setTimeout(() => {
+      emoji.classList.remove('dying');
+
+      if (G.wave >= 5) {
+        onVictory();
+        return;
+      }
+
+      const nextIdx = G.wave; // WAVES is 0-indexed; G.wave goes 1-10 so WAVES[G.wave] is the next one
+      showWaveIntro(nextIdx, () => {
+        startWave(nextIdx);
+      });
+    }, 600);
+  }
+
+  function onVictory() {
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+    clearInterval(G.clockId);
+    sfxVictory();
+
+    setTimeout(() => {
+      eid('end-emoji').textContent       = '🏆';
+      eid('end-title').textContent       = 'YOU WIN!';
+      eid('end-title').className         = 'end-title win';
+      eid('end-subtitle').textContent    = 'ALL 5 WAVES CLEARED';
+      eid('end-wpm').textContent         = calcWPM();
+      eid('end-acc').textContent         = calcAcc() + '%';
+      eid('end-time').textContent        = fmtTime(elapsedSecs());
+      eid('endscreen').classList.remove('hidden');
+    }, 400);
+  }
+
+  function onPlayerDeath() {
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+    clearInterval(G.clockId);
+    sfxDeath();
+
+    setTimeout(() => {
+      eid('end-emoji').textContent       = '💀';
+      eid('end-title').textContent       = 'YOU DIED';
+      eid('end-title').className         = 'end-title lose';
+      eid('end-subtitle').textContent    = `WAVE ${G.wave} / 05`;
+      eid('end-wpm').textContent         = calcWPM();
+      eid('end-acc').textContent         = calcAcc() + '%';
+      eid('end-time').textContent        = fmtTime(elapsedSecs());
+      eid('endscreen').classList.remove('hidden');
+    }, 400);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════════════════
+
+  // ══════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════════════════
+  function init() {
+    waveIntroEl.classList.add('hidden');
+    eid('endscreen').classList.add('hidden');
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+    clearInterval(G.clockId);
+
+    Object.assign(G, {
+      queue: [], pool: [], usedWords: new Set(),
+      hits: 0, misses: 0, totalChars: 0, combo: 0,
+      firstKeyTime: null, wordStartTime: null,
+      playerHp: 100, playerMaxHp: 100,
+      monsterHp: WAVES[0].hp, monsterMaxHp: WAVES[0].hp,
+      monsterDying: false,
+      wave: 1,
+    });
+
+    updatePlayerHp();
+    updateMonsterHp();
+    updateHUD();
+    updateComboDisplay();
+
+    inputEl.value = '';
+    inputEl.style.borderColor = '';
+    inputEl.style.boxShadow = '';
+    inputEl.classList.remove('error');
+
+    // Live WPM + clock tick
+    G.clockId = setInterval(() => {
+      if (G.firstKeyTime) {
+        wpmValEl.textContent   = calcWPM();
+        statTimeEl.textContent = fmtTime(elapsedSecs());
+      }
+    }, 250);
+
+    // Show wave 1 intro then begin
+    showWaveIntro(0, () => startWave(0));
+  }
+
+  // ══════════════════════════════════════════════════════
+  // 4-SECOND WORD TIMER
+  // ══════════════════════════════════════════════════════
+  function startWordTimer() {
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+    G.wordStartTime = Date.now();
+    G.missTimer = setTimeout(onMiss, WAVES[G.wave - 1].timer);
+    tickTimerBar();
+  }
+
+  function tickTimerBar() {
+    // Query fresh every frame — innerHTML may have been rebuilt by updateActiveChip()
+    const bar = chips[0].querySelector('.timer-bar-fill');
+    if (!bar) return;
+
+    const pct = Math.max(0, 1 - (Date.now() - G.wordStartTime) / WAVES[G.wave - 1].timer);
+    bar.style.width = (pct * 100) + '%';
+    bar.className = 'timer-bar-fill' +
+      (pct < 0.25 ? ' danger' : pct < 0.5 ? ' warning' : '');
+
+    if (pct > 0) G.rafId = requestAnimationFrame(tickTimerBar);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════
+  const CHIP_CLASSES = ['active', 'next1', 'next2'];
+
+  function renderQueue() {
+    chips.forEach((chip, i) => {
+      chip.className = 'word-chip ' + CHIP_CLASSES[i];
+      if (i === 0) {
+        chip.innerHTML = buildActiveHTML('');
+      } else {
+        chip.textContent = G.queue[i].toUpperCase();
+      }
+    });
+  }
+
+  // Build the innerHTML of the active chip showing typed / wrong / remaining spans
+  function buildActiveHTML(raw) {
+    const typed = raw.toLowerCase();
+    const word  = G.queue[0];
+    let html = '';
+
+    for (let i = 0; i < word.length; i++) {
+      if (i >= typed.length) {
+        html += `<span class="remaining">${word[i].toUpperCase()}</span>`;
+      } else {
+        const cls = typed[i] === word[i] ? 'typed' : 'wrong';
+        html += `<span class="${cls}">${word[i].toUpperCase()}</span>`;
+      }
+    }
+
+    // Countdown bar lives inside the chip so it moves with the word
+    html += '<div class="timer-bar-wrap"><div class="timer-bar-fill"></div></div>';
+    return html;
+  }
+
+  // Cheap update: only rebuilds active chip, not the whole queue
+  function updateActiveChip() {
+    chips[0].innerHTML = buildActiveHTML(inputEl.value);
+    // tickTimerBar() RAF is still running and will find the fresh bar element next frame
+  }
+
+  function updateHUD() {
+    wpmValEl.textContent  = calcWPM();
+    statWordsEl.textContent = G.hits;
+    statAccEl.textContent   = calcAcc() + '%';
+  }
+
+  function updateComboDisplay() {
+    comboValEl.textContent = 'x' + G.combo;
+
+    const hot = G.combo >= 3;
+    comboMultEl.textContent   = hot ? '1.5× DMG' : 'NO BONUS';
+    comboMultEl.style.opacity = hot ? '1' : '0.35';
+    comboMultEl.style.color   = hot ? 'var(--pink)' : '#555';
+    comboMultEl.style.borderColor = hot ? 'var(--pink)' : '#555';
+
+    // Brief pop animation on the counter
+    comboValEl.classList.remove('pop');
+    void comboValEl.offsetWidth; // force reflow to restart animation
+    comboValEl.classList.add('pop');
+    setTimeout(() => comboValEl.classList.remove('pop'), 120);
+  }
+
+  // Quick green flash on the input to confirm a hit
+  function flashInputHit() {
+    inputEl.style.background  = '#efffec';
+    inputEl.style.boxShadow   = '8px 8px 0 var(--green)';
+    inputEl.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      inputEl.style.background  = '';
+      inputEl.style.boxShadow   = '';
+      inputEl.style.borderColor = '';
+    }, 140);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // HIT  — correct word typed
+  // ══════════════════════════════════════════════════════
+  function onHit() {
+    clearTimeout(G.missTimer);
+    cancelAnimationFrame(G.rafId);
+
+    G.totalChars += G.queue[0].length;
+    G.hits++;
+    G.combo++;
+
+    // Deal WPM-scaled damage (combo multiplier already baked in)
+    dealToMonster(calcDamage());
+
+    // If the killing blow just triggered onMonsterDeath, stop here —
+    // startWordTimer must NOT run while the wave intro is up.
+    if (G.monsterDying) { sfxHit(); return; }
+
+    // Advance queue
+    G.queue.shift();
+    G.queue.push(popWord());
+
+    inputEl.value = '';
+    inputEl.classList.remove('error');
+    inputEl.style.borderColor = '';
+    inputEl.style.boxShadow = '';
+
+    flashInputHit();
+    renderQueue();
+    updateHUD();
+    updateComboDisplay();
+    startWordTimer();
+    sfxHit();
+  }
+
+  // ══════════════════════════════════════════════════════
+  // MISS  — 4-second timeout expired (or called manually)
+  // ══════════════════════════════════════════════════════
+  function onMiss() {
+    G.misses++;
+    G.combo = 0;
+
+    // Monster attacks — deal 15 damage to player
+    dealToPlayer(15);
+
+    G.queue.shift();
+    G.queue.push(popWord());
+
+    inputEl.value = '';
+
+    // Screen shake (force-restart if already shaking)
+    document.body.classList.remove('shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('shake');
+    setTimeout(() => document.body.classList.remove('shake'), 440);
+
+    // Input red flash
+    inputEl.classList.remove('error');
+    void inputEl.offsetWidth;
+    inputEl.classList.add('error');
+    setTimeout(() => {
+      inputEl.classList.remove('error');
+      inputEl.style.borderColor = '';
+      inputEl.style.boxShadow = '';
+    }, 360);
+
+    renderQueue();
+    updateHUD();
+    updateComboDisplay();
+    startWordTimer();
+    sfxMiss();
+  }
+
+  // ══════════════════════════════════════════════════════
+  // INPUT HANDLER
+  // ══════════════════════════════════════════════════════
+  inputEl.addEventListener('input', () => {
+    // Strip any spaces that sneak in
+    const raw = inputEl.value.replace(/\s+/g, '');
+    if (inputEl.value !== raw) inputEl.value = raw;
+
+    // Start WPM clock on very first keypress
+    if (!G.firstKeyTime && raw.length > 0) {
+      G.firstKeyTime = Date.now();
+    }
+
+    // Update character-level highlighting in active chip
+    updateActiveChip();
+
+    // Tint input border pink while there are wrong characters
+    const word = G.queue[0];
+    let hasWrong = false;
+    for (let i = 0; i < raw.length && i < word.length; i++) {
+      if (raw[i].toLowerCase() !== word[i]) { hasWrong = true; break; }
+    }
+
+    if (!inputEl.classList.contains('error')) {
+      // Only apply the soft wrong-char tint, not the full miss-flash
+      inputEl.style.borderColor = hasWrong ? 'var(--pink)' : '';
+      inputEl.style.boxShadow   = hasWrong ? '8px 8px 0 var(--pink)' : '';
+    }
+
+    // Auto-advance when the typed word exactly matches the active word
+    if (raw.toLowerCase() === word) onHit();
+  });
+
+  // Block space from inserting a literal space character
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === ' ') e.preventDefault();
+  });
+
+  // Keep input focused whenever the player clicks or types anywhere (not during wave intro)
+  document.addEventListener('click', () => {
+    if (!waveIntroEl.classList.contains('hidden')) return;
+    inputEl.focus();
+  });
+  document.addEventListener('keydown', e => {
+    if (!waveIntroEl.classList.contains('hidden')) return;
+    if (e.target !== inputEl && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      inputEl.focus();
+    }
+  });
+
+  // Play Again button
+  eid('play-again-btn').addEventListener('click', init);
+
+  // ══════════════════════════════════════════════════════
+  // GO
+  // ══════════════════════════════════════════════════════
+  init();
+  </script>
+</body>
+</html>
