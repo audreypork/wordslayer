@@ -1050,6 +1050,7 @@
     hits: 0, misses: 0, totalChars: 0, combo: 0,
     firstKeyTime: null, wordStartTime: null,
     missTimer: null, rafId: null, clockId: null,
+    waitingForFirstKey: false,
     // combat
     playerHp: 100, playerMaxHp: 100,
     monsterHp: 80,  monsterMaxHp: 80,
@@ -1242,7 +1243,7 @@
     inputEl.value = '';
     renderQueue();
 
-    startWordTimer();
+    G.waitingForFirstKey = true;
     inputEl.focus();
   }
 
@@ -1325,6 +1326,7 @@
       queue: [], pool: [], usedWords: new Set(),
       hits: 0, misses: 0, totalChars: 0, combo: 0,
       firstKeyTime: null, wordStartTime: null,
+      waitingForFirstKey: false,
       playerHp: 100, playerMaxHp: 100,
       monsterHp: WAVES[0].hp, monsterMaxHp: WAVES[0].hp,
       monsterDying: false,
@@ -1537,6 +1539,12 @@
     // Start WPM clock on very first keypress
     if (!G.firstKeyTime && raw.length > 0) {
       G.firstKeyTime = Date.now();
+    }
+
+    // Start miss timer on first key of each wave
+    if (G.waitingForFirstKey && raw.length > 0) {
+      G.waitingForFirstKey = false;
+      startWordTimer();
     }
 
     // Update character-level highlighting in active chip
