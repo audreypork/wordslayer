@@ -803,6 +803,7 @@
     <div style="width:100%;max-width:520px;">
       <div id="home-lb-table"></div>
     </div>
+    <p class="lb-heading" id="home-attempts" style="margin-top:4px;"></p>
     <div id="home-start-prompt">CLICK TO START</div>
   </div>
 
@@ -1441,6 +1442,15 @@
   // ═══════════════════════════════════════════════════════
   // LEADERBOARD  (Supabase)
   // ═══════════════════════════════════════════════════════
+  async function logPlay() {
+    await db.from('plays').insert({});
+  }
+
+  async function fetchTotalPlays() {
+    const { count } = await db.from('plays').select('*', { count: 'exact', head: true });
+    return count || 0;
+  }
+
   const db = supabase.createClient(
     'https://eambqurwfvxwoewoakcd.supabase.co',
     'sb_publishable_7SvH_BGrMGNb4XrX4uaXUg_DTAVZNmD'
@@ -1507,13 +1517,21 @@
   function showHomeScreen() {
     const tableEl = eid('home-lb-table');
     lbLoadingEl(tableEl);
+    eid('home-attempts').textContent = '';
     eid('homescreen').classList.remove('hidden');
-    fetchLeaderboard().then(entries => renderLeaderboard(entries, null, tableEl));
+    Promise.all([
+      fetchLeaderboard(),
+      fetchTotalPlays(),
+    ]).then(([entries, total]) => {
+      renderLeaderboard(entries, null, tableEl);
+      eid('home-attempts').textContent = `${total.toLocaleString()} total attempt${total === 1 ? '' : 's'}`;
+    });
 
     function begin() {
       eid('homescreen').removeEventListener('click', begin);
       document.removeEventListener('keydown', onKey);
       eid('homescreen').classList.add('hidden');
+      logPlay();
       showWaveIntro(0, () => startWave(0));
     }
     function onKey(e) {
