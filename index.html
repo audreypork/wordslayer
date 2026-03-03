@@ -703,6 +703,35 @@
       margin-top: -12px;
     }
 
+    /* ─── Home Screen ────────────────────────────────────── */
+    #homescreen {
+      position: fixed; inset: 0;
+      background: var(--black);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      z-index: 200; gap: 20px;
+      overflow-y: auto; padding: 48px 24px 60px;
+      cursor: pointer;
+    }
+
+    #homescreen.hidden { display: none; }
+
+    #home-title {
+      font-size: 72px; font-weight: 900;
+      letter-spacing: 10px; text-transform: uppercase;
+      color: var(--white); text-shadow: 6px 6px 0 var(--green);
+    }
+
+    #home-title span { color: var(--green); }
+
+    #home-start-prompt {
+      font-size: 13px; font-weight: 900; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--black);
+      background: var(--yellow); border: 3px solid var(--black);
+      box-shadow: 4px 4px 0 var(--black); padding: 12px 28px;
+      margin-top: 4px;
+    }
+
     /* ─── Name Entry ─────────────────────────────────────── */
     #name-entry { width: 100%; max-width: 520px; }
     #name-entry.hidden { display: none; }
@@ -766,6 +795,16 @@
   </style>
 </head>
 <body>
+
+  <!-- ─── HOME SCREEN ──────────────────────────────────── -->
+  <div id="homescreen">
+    <div id="home-title">TYPE<span>TO</span>KILL</div>
+    <p class="lb-heading">Leaderboard — top survivors</p>
+    <div style="width:100%;max-width:520px;">
+      <div id="home-lb-table"></div>
+    </div>
+    <div id="home-start-prompt">CLICK TO START</div>
+  </div>
 
   <!-- ─── WAVE INTRO (hidden at start) ──────────────────── -->
   <div id="wave-intro" class="hidden">
@@ -1407,9 +1446,7 @@
     'sb_publishable_7SvH_BGrMGNb4XrX4uaXUg_DTAVZNmD'
   );
 
-  function lbLoading() {
-    eid('lb-table').innerHTML = '<div class="lb-row lb-entry" style="grid-template-columns:1fr;padding:16px;"><span class="lb-name" style="color:#444;letter-spacing:1px;font-size:11px;">Loading...</span></div>';
-  }
+  function lbLoading() { lbLoadingEl(eid('lb-table')); }
 
   async function fetchLeaderboard() {
     const { data, error } = await db
@@ -1431,8 +1468,8 @@
     return fetchLeaderboard();
   }
 
-  function renderLeaderboard(entries, highlightName) {
-    const tableEl = eid('lb-table');
+  function renderLeaderboard(entries, highlightName, tableEl) {
+    tableEl = tableEl || eid('lb-table');
     if (!entries.length) {
       tableEl.innerHTML = '<div class="lb-row lb-entry" style="grid-template-columns:1fr;padding:16px;"><span class="lb-name" style="color:#444;letter-spacing:1px;font-size:11px;">No survivors yet — be the first!</span></div>';
       return;
@@ -1453,6 +1490,31 @@
       </div>`;
     }).join('');
     tableEl.innerHTML = header + rows;
+  }
+
+  function lbLoadingEl(tableEl) {
+    tableEl.innerHTML = '<div class="lb-row lb-entry" style="grid-template-columns:1fr;padding:16px;"><span class="lb-name" style="color:#444;letter-spacing:1px;font-size:11px;">Loading...</span></div>';
+  }
+
+  function showHomeScreen() {
+    const tableEl = eid('home-lb-table');
+    lbLoadingEl(tableEl);
+    eid('homescreen').classList.remove('hidden');
+    fetchLeaderboard().then(entries => renderLeaderboard(entries, null, tableEl));
+
+    function begin() {
+      eid('homescreen').removeEventListener('click', begin);
+      document.removeEventListener('keydown', onKey);
+      eid('homescreen').classList.add('hidden');
+      showWaveIntro(0, () => startWave(0));
+    }
+    function onKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin(); }
+    }
+    setTimeout(() => {
+      eid('homescreen').addEventListener('click', begin);
+      document.addEventListener('keydown', onKey);
+    }, 300);
   }
 
   // ═══════════════════════════════════════════════════════
@@ -1482,6 +1544,7 @@
       pendingScore: null,
     });
 
+    eid('homescreen').classList.add('hidden');
     eid('name-entry').classList.add('hidden');
     eid('leaderboard').classList.add('hidden');
     eid('lb-name-input').value = '';
@@ -1504,8 +1567,8 @@
       }
     }, 250);
 
-    // Show wave 1 intro then begin
-    showWaveIntro(0, () => startWave(0));
+    // Show home screen (leaderboard) then wave 1 intro
+    showHomeScreen();
   }
 
   // ══════════════════════════════════════════════════════
