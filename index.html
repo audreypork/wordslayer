@@ -1532,7 +1532,6 @@
       eid('homescreen').removeEventListener('click', begin);
       document.removeEventListener('keydown', onKey);
       eid('homescreen').classList.add('hidden');
-      logPlay();
       showWaveIntro(0, () => startWave(0));
     }
     function onKey(e) {
@@ -1780,9 +1779,10 @@
     const raw = inputEl.value.replace(/\s+/g, '');
     if (inputEl.value !== raw) inputEl.value = raw;
 
-    // Start WPM clock on very first keypress
+    // Start WPM clock and log attempt on very first keypress
     if (!G.firstKeyTime && raw.length > 0) {
       G.firstKeyTime = Date.now();
+      logPlay();
     }
 
     // Start miss timer on first key of each wave
