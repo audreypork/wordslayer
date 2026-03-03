@@ -1463,6 +1463,7 @@
       .from('leaderboard')
       .select('name, hp, time_secs, time_display, wpm, accuracy')
       .order('time_secs', { ascending: true })
+      .order('wpm',       { ascending: false })
       .order('hp',        { ascending: false })
       .limit(10);
     return error ? [] : data;
