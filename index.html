@@ -763,7 +763,7 @@
 
     .lb-row {
       display: grid;
-      grid-template-columns: 40px 1fr 80px 80px;
+      grid-template-columns: 40px 1fr 64px 64px 64px;
       gap: 0; border-bottom: 1px solid #1a1a1a;
       padding: 8px 12px; align-items: center;
     }
@@ -1451,7 +1451,7 @@
   async function fetchLeaderboard() {
     const { data, error } = await db
       .from('leaderboard')
-      .select('name, hp, time_secs, time_display')
+      .select('name, hp, time_secs, time_display, wpm, accuracy')
       .order('hp',        { ascending: false })
       .order('time_secs', { ascending: true })
       .limit(10);
@@ -1464,6 +1464,8 @@
       hp,
       time_secs:    timeSecs,
       time_display: fmtTime(timeSecs),
+      wpm:          calcWPM(),
+      accuracy:     calcAcc(),
     });
     return fetchLeaderboard();
   }
@@ -1477,7 +1479,8 @@
     const header = `<div class="lb-row lb-header">
       <span>#</span><span>Name</span>
       <span style="text-align:right">Time</span>
-      <span style="text-align:right">HP Left</span>
+      <span style="text-align:right">WPM</span>
+      <span style="text-align:right">HP</span>
     </div>`;
     const rows = entries.map((e, i) => {
       const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
@@ -1486,6 +1489,7 @@
         <span class="lb-rank ${rankClass}">${i + 1}</span>
         <span class="lb-name">${e.name}</span>
         <span class="lb-time">${e.time_display}</span>
+        <span class="lb-time">${e.wpm}</span>
         <span class="lb-hp">${e.hp} HP</span>
       </div>`;
     }).join('');
