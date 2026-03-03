@@ -1470,6 +1470,10 @@
     return fetchLeaderboard();
   }
 
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   function renderLeaderboard(entries, highlightName, tableEl) {
     tableEl = tableEl || eid('lb-table');
     if (!entries.length) {
@@ -1487,7 +1491,7 @@
       const isYou     = highlightName && e.name === highlightName.trim().toUpperCase();
       return `<div class="lb-row lb-entry ${isYou ? 'lb-you' : ''}">
         <span class="lb-rank ${rankClass}">${i + 1}</span>
-        <span class="lb-name">${e.name}</span>
+        <span class="lb-name">${escapeHtml(e.name)}</span>
         <span class="lb-time">${e.time_display}</span>
         <span class="lb-time">${e.wpm}</span>
         <span class="lb-hp">${e.hp} HP</span>
